@@ -48,9 +48,9 @@ __device__ int swap(int x, int mask, int dir) {
 __global__ void warpBitonicSort(int *arr, int size) {
   // threadIdx.x % 32
   int lane_id = threadIdx.x & 0x1f;
-  int threadIdx = threadIdx.x + blockIdx.x * blockDim.x;
+  int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
   // seed x with value from array
-  int x = threadIdx < size ? arr[threadIdx] : INT_MAX;
+  int x = thread_id < size ? arr[thread_id] : INT_MAX;
 
   // make bitonic sequence and sort
   for (int i = 0; (1 << i) <= warpSize; i++) {
@@ -70,7 +70,7 @@ __global__ void warpBitonicSort(int *arr, int size) {
   }
 
   // update value in array with sorted value
-  if (threadIdx < size) {
-    arr[threadIdx] = x;
+  if (thread_id < size) {
+    arr[thread_id] = x;
   }
 }
