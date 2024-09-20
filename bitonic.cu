@@ -45,7 +45,7 @@ __device__ int swap(int x, int mask, int dir) {
  *
  * @see swap() for the element comparison and swapping logic
  */
-__global__ void warpBitonicSort(int* arr, int size) {
+__global__ void warpBitonicSort(int *arr, int size) {
   // threadIdx.x % 32
   int lane_id = threadIdx.x & 0x1f;
   int threadIdx = threadIdx.x + blockIdx.x * blockDim.x;
