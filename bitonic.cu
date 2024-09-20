@@ -41,7 +41,7 @@ __device__ int swap(int x, int mask, int dir) {
  * @param size Total number of elements in the array
  *
  * @note This function assumes that the number of threads per block is at least equal to the warp size.
- *       Elements beyond the array size are padded with INT_MIN.
+ *       Elements beyond the array size are padded with INT_MAX.
  *
  * @see swap() for the element comparison and swapping logic
  */
@@ -50,7 +50,7 @@ __global__ void warpBitonicSort(int* arr, int size) {
   int lane_id = threadIdx.x & 0x1f;
   int threadIdx = threadIdx.x + blockIdx.x * blockDim.x;
   // seed x with value from array
-  int x = threadIdx < size ? arr[threadIdx] : INT_MIN;
+  int x = threadIdx < size ? arr[threadIdx] : INT_MAX;
 
   // make bitonic sequence and sort
   for (int i = 0; (1 << i) <= warpSize; i++) {
