@@ -6,9 +6,7 @@
 * Author: Andrew Boessen
 */
 
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <climits>
+#include "warp_bitonic_sort.cuh"
 
 /**
 * Swap
@@ -23,7 +21,7 @@
 */
 __device__ int swap(int x, int mask, int dir) {
   // get correspondin element to x in butterfly diagram
-  int y = __shfl_xor_sync(x, mask);
+  int y = __shfl_xor_sync(0xffffffff, x, mask);
   // return smaller or larger value based on direction of swap
   return x < y == dir ? y : x;
 }
@@ -73,4 +71,9 @@ __global__ void warpBitonicSort(int *arr, int size) {
   if (thread_id < size) {
     arr[thread_id] = x;
   }
+}
+
+void launchWarpBitonicSort(int *arr, int size) {
+    const int BLOCK_SIZE = 256;
+    warpBitonicSort<<<size/BLOCK_SIZE, BLOCK_SIZE>>>(arr, size);
 }

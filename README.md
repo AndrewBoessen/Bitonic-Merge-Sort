@@ -29,15 +29,9 @@ Bitonic Merge Sort is a comparison-based sorting algorithm that can sort n eleme
    cd gpu-bitonic-sort
    ```
 
-2. Create a build directory and run CMake:
+2. Build the project:
    ```
-   mkdir build && cd build
-   cmake ..
-   ```
-
-3. Build the project:
-   ```
-   make
+   make all
    ```
 
 ## Usage

@@ -1,6 +1,17 @@
+# CUDA specific
 *.i
 *.ii
 *.gpu
 *.ptx
 *.cubin
 *.fatbin
+# Object Files
+*.slo
+*.lo
+*.o
+*.obj
+# Executables
+*.exe
+*.out
+*.app
+warp_bitonic_sort
