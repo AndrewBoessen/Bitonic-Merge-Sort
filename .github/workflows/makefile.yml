@@ -11,23 +11,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    
+
     steps:
     - name: Check out repository
       uses: actions/checkout@v3
-    
+
     - name: Install CUDA and dependencies
       run: |
-        # Add NVIDIA package repositories and key
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+        sudo dpkg -i cuda-keyring_1.1-1_all.deb
         sudo apt-get update
-        sudo apt-get install -y gnupg curl lsb-release
-        curl https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin | sudo tee /etc/apt/preferences.d/cuda-repository-pin-600
-        curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pub | sudo tee /etc/apt/trusted.gpg.d/cuda.asc
-        sudo apt-get update
-        
-        # Install CUDA
-        sudo apt-get install -y nvidia-cuda-toolkit
-        
+
+        # install CUDA toolkit
+        sudo apt-get -y install cuda-toolkit-12-6
+
         # Install other necessary dependencies like build-essential
         sudo apt-get install -y build-essential
 
