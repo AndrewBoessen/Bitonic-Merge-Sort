@@ -23,14 +23,10 @@ jobs:
         sudo apt-get update
 
         # install CUDA toolkit
-        sudo apt-get -y install cuda-toolkit-12-6
+        sudo apt-get -y install nvidia-cuda-toolkit
 
         # Install other necessary dependencies like build-essential
         sudo apt-get install -y build-essential
-
-        # Add CUDA to PATH and set environment variables
-        echo "export PATH=/usr/local/cuda-12.6/bin:$PATH" >> $GITHUB_ENV
-        echo "export LD_LIBRARY_PATH=/usr/local/cuda-12.6/lib64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
         # Verify that CUDA is installed
         nvcc --version
