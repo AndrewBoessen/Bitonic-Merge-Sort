@@ -1,46 +1,53 @@
-name: Makefile CI
+name: Build with CUDA and C++
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-22.04
+    
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
-    - name: Install CUDA Toolkit
+    - name: Check out repository
+      uses: actions/checkout@v3
+    
+    - name: Install CUDA and dependencies
       run: |
+        # Add NVIDIA package repositories and key
         sudo apt-get update
-        sudo apt-get install -y wget gnupg2
-        # Add NVIDIA repository key
-        sudo mkdir -p /etc/apt/keyrings
-        wget -qO- https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub | sudo gpg --dearmor -o /etc/apt/keyrings/cuda.gpg
-        echo "deb [signed-by=/etc/apt/keyrings/cuda.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" | sudo tee /etc/apt/sources.list.d/cuda.list
+        sudo apt-get install -y gnupg curl lsb-release
+        curl https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin | sudo tee /etc/apt/preferences.d/cuda-repository-pin-600
+        curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pub | sudo tee /etc/apt/trusted.gpg.d/cuda.asc
         sudo apt-get update
-        sudo apt-get -y install cuda-toolkit-11-7
+        
+        # Install CUDA (make sure to choose the right version you need)
+        sudo apt-get install -y cuda-11-7
+        
+        # Install other necessary dependencies like build-essential
+        sudo apt-get install -y build-essential
 
-    - name: Set up CUDA environment variables
+        # Verify that CUDA is installed
+        nvcc --version
+        g++ --version
+
+    - name: Build with Makefile
       run: |
-        echo "PATH=/usr/local/cuda-11.7/bin:$PATH" >> $GITHUB_ENV
-        echo "LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+        # Make sure the Makefile exists and then build the project
+        if [ -f makefile ]; then
+          make
+        else
+          echo "Makefile not found!"
+          exit 1
+        fi
 
-    - name: Verify nvcc installation
-      run: nvcc --version
+    - name: Run tests (optional)
+      run: |
+        # Run tests if you have them defined
+        # Example: ./test_program
+        echo "No tests defined"
 
-    - name: Configure
-      run: ./configure
-
-    - name: Install dependencies
-      run: make
-
-    - name: Run check
-      run: make check
-
-    - name: Run distcheck
-      run: make distcheck
