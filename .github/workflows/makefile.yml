@@ -25,8 +25,8 @@ jobs:
         curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pub | sudo tee /etc/apt/trusted.gpg.d/cuda.asc
         sudo apt-get update
         
-        # Install CUDA (make sure to choose the right version you need)
-        sudo apt-get install -y cuda-11-7
+        # Install CUDA
+        sudo apt-get install -y nvidia-cuda-toolkit
         
         # Install other necessary dependencies like build-essential
         sudo apt-get install -y build-essential
