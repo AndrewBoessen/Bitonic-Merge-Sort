@@ -28,6 +28,10 @@ jobs:
         # Install other necessary dependencies like build-essential
         sudo apt-get install -y build-essential
 
+        # Add CUDA to PATH and set environment variables
+        echo "export PATH=/usr/local/cuda-12.6/bin:$PATH" >> $GITHUB_ENV
+        echo "export LD_LIBRARY_PATH=/usr/local/cuda-12.6/lib64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+
         # Verify that CUDA is installed
         nvcc --version
         g++ --version
