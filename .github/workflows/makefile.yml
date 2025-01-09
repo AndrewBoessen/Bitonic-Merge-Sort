@@ -42,9 +42,8 @@ jobs:
           exit 1
         fi
 
-    - name: Run tests (optional)
+    - name: Run tests
       run: |
-        # Run tests if you have them defined
-        # Example: ./test_program
-        echo "No tests defined"
+        # Run tests
+        ./test_bitonic_sort
 

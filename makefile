@@ -20,5 +20,8 @@ main.o: main.cpp warp_bitonic_sort.cuh
 warp_bitonic_sort.o: warp_bitonic_sort.cu warp_bitonic_sort.cuh
 	$(NVCC) $(NVCCFLAGS) -c $< -o $@
 
+test_bitonic_sort.o: test_bitonic_sort.cu warp_bitonic_sort.cuh
+	$(NVCC) $(NVCCFLAGS) -c $< -o $@
+
 clean:
-	rm -f *.o warp_bitonic_sort cpu_bitonic_sort
+	rm -f *.o warp_bitonic_sort cpu_bitonic_sort test_bitonic_sort
