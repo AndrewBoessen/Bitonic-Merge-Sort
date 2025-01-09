@@ -6,9 +6,12 @@ CUDA_PATH = /opt/cuda
 INCLUDES = -I$(CUDA_PATH)/include
 LDFLAGS = -L$(CUDA_PATH)/lib64 -lcudart
 
-all: warp_bitonic_sort cpu_bitonic_sort
+all: warp_bitonic_sort cpu_bitonic_sort smem_bitonic_sort
 
 warp_bitonic_sort: main.o warp_bitonic_sort.o
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
+smem_bitonic_sort: main.o smem_bitonic_sort.o
 	$(CXX) $^ -o $@ $(LDFLAGS)
 
 cpu_bitonic_sort: cpu_bitonic_sort.cpp
@@ -20,5 +23,8 @@ main.o: main.cpp warp_bitonic_sort.cuh
 warp_bitonic_sort.o: warp_bitonic_sort.cu warp_bitonic_sort.cuh
 	$(NVCC) $(NVCCFLAGS) -c $< -o $@
 
+smem_bitonic_sort.o: smem_bitonic_sort.cu smem_bitonic_sort.cuh
+	$(NVCC) $(NVCCFLAGS) -c $< -o $@
+
 clean:
-	rm -f *.o warp_bitonic_sort cpu_bitonic_sort
+	rm -f *.o warp_bitonic_sort smem_bitonic_sort cpu_bitonic_sort
