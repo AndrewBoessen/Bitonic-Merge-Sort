@@ -76,7 +76,7 @@ __global__ void smemBitonicSort(int *arr, int size) {
         dir = (arr_id >> (i + 1)) & 1 ^ (arr_id >> (i - j)) & 1;
       }
       // elements to compare and swap are directly next to eachother in warp
-      smem[arr_id] = swap(smem[arr_id], 2, dir);
+      smem[arr_id] = swap(smem[arr_id], 1, dir);
       // wait for all warps to finish swap before going to next layer
       __syncthreads();
     }
