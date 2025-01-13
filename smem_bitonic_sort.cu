@@ -109,7 +109,7 @@ __global__ void smemBitonicSort(int *arr, int size) {
 
   // update value in array with sorted value
   if (thread_id < size) {
-    arr[thread_id] = x;
+    arr[thread_id + blockIdx.x * blockDim.x] = x;
   }
 }
 
