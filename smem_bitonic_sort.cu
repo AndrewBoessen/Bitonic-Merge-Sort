@@ -59,6 +59,9 @@ __global__ void smemBitonicSort(int *arr, int size) {
   // pad overflow threads with INT_MAX
   smem[thread_id] = thread_id < size ? arr[thread_id] : INT_MAX;
 
+  // value in array
+  int x;
+
   // make bitonic sequence and sort
   for (int i = 0; (1 << i) <= blockDim.x; i++) {
     for (int j = 0; j <= i; j++) {
@@ -69,22 +72,44 @@ __global__ void smemBitonicSort(int *arr, int size) {
                    (thread_id / offset * offset) + (thread_id % 4 / 2);
       // direction to swap caller and source lanes
       int dir;
+
+      // mask for swap offset
+      int mask;
+
       // only alternate direction when forming bitonic sequence
       if (1 << i == blockDim.x) {
         dir = (arr_id >> (i - j)) & 1;
       } else {
         dir = (arr_id >> (i + 1)) & 1 ^ (arr_id >> (i - j)) & 1;
       }
-      // elements to compare and swap are directly next to eachother in warp
-      smem[arr_id] = swap(smem[arr_id], 1, dir);
-      // wait for all warps to finish swap before going to next layer
-      __syncthreads();
+      // use registers for smaller than warp size
+      // otherwize load from smem
+      if (1 << j == warpSize) {
+        x = smem[thread_id];
+      } else if (1 << j > warpSize) {
+        x = smem[arr_id];
+      }
+
+      if (1 << j <= warpSize) {
+        mask = 1 << (i - j);
+      } else {
+        // elements to compare and swap are directly next to eachother in warp
+        mask = 1;
+      }
+      // perform compare and swap
+      x = swap(x, mask, dir);
+      // store in smem
+      if (1 << j > warpSize) {
+        smem[arr_id] = x;
+        // wait for all warps to finish swap before going to next layer
+        __syncthreads();
+      }
     }
   }
 
   // update value in array with sorted value
   if (thread_id < size) {
-    arr[thread_id] = smem[thread_id];
+    arr[thread_id] = x;
   }
 }
 
