@@ -7,7 +7,7 @@
  * Author: Andrew Boessen
  */
 
-#include "smem_bitonic_sort.cuh"
+#include "bitonic_sort.cuh"
 
 /**
  * Swap
@@ -113,7 +113,7 @@ __global__ void smemBitonicSort(int *arr, int size) {
   }
 }
 
-void launchSmemBitonicSort(int *arr, int size) {
+void launchBitonicSort(int *arr, int size) {
   const int BLOCK_SIZE = 1024;
   smemBitonicSort<<<size / BLOCK_SIZE, BLOCK_SIZE>>>(arr, size);
 }
