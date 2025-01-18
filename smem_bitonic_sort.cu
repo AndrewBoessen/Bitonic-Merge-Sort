@@ -8,6 +8,7 @@
  */
 
 #include "bitonic_sort.cuh"
+#include <stdio.h>
 
 /**
  * Swap
@@ -70,6 +71,7 @@ __global__ void smemBitonicSort(int *arr, int size) {
       int arr_id =
           (thread_id / sort_size * sort_size) + (thread_id % sort_size / 2) ^
           (thread_id % 2 * offset); // apply xor to odd threads
+      printf("thread %d arr %d\n", thread_id, arr_id);
       // direction to swap caller and source lanes
       int dir;
       // only alternate direction when forming bitonic sequence
@@ -93,5 +95,6 @@ __global__ void smemBitonicSort(int *arr, int size) {
 
 void launchBitonicSort(int *arr, int size) {
   const int BLOCK_SIZE = 1024;
-  smemBitonicSort<<<size / BLOCK_SIZE, BLOCK_SIZE>>>(arr, size);
+  smemBitonicSort<<<(size + (BLOCK_SIZE - 1)) / BLOCK_SIZE, BLOCK_SIZE>>>(arr,
+                                                                          size);
 }

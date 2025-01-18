@@ -1,7 +1,7 @@
 CXX = g++
 NVCC = nvcc
 CXXFLAGS = -std=c++11 -O2
-NVCCFLAGS = -O2
+NVCCFLAGS = -O2 -G -g
 CUDA_PATH = /opt/cuda
 INCLUDES = -I$(CUDA_PATH)/include
 LDFLAGS = -L$(CUDA_PATH)/lib64 -lcudart
