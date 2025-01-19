@@ -8,7 +8,6 @@
  */
 
 #include "bitonic_sort.cuh"
-#include <stdio.h>
 
 /**
  * Swap
@@ -51,7 +50,7 @@ __device__ int swap(int x, int mask, int dir) {
  */
 __global__ void smemBitonicSort(int *arr, int size) {
   // shared memory for block of 1024 threads
-  __shared__ int smem[1 << 10];
+  extern __shared__ int smem[];
 
   // local thread id in block
   int thread_id = threadIdx.x;
@@ -59,33 +58,34 @@ __global__ void smemBitonicSort(int *arr, int size) {
   // seed shared memory array with value from global array
   // pad overflow threads with INT_MAX
   smem[thread_id] = thread_id < size ? arr[thread_id] : INT_MAX;
+  __syncthreads();
 
   // make bitonic sequence and sort
-  for (int i = 0; (1 << i) <= blockDim.x; i++) {
+  for (int i = 0; (1 << i) <= size; i++) {
     for (int j = 0; j <= i; j++) {
       // distance between caller and source lanes
-      int offset = 1 << (i - j);
-      // number of elements in each sorted subset
-      int sort_size = offset << 1;
-      // id into smem array
-      int arr_id =
-          (thread_id / sort_size * sort_size) + (thread_id % sort_size / 2) ^
-          (thread_id % 2 * offset); // apply xor to odd threads
-      printf("thread %d arr %d\n", thread_id, arr_id);
+      int offset = 1 << (i - j - 1);
       // direction to swap caller and source lanes
       int dir;
       // only alternate direction when forming bitonic sequence
       if (1 << i == blockDim.x) {
-        dir = (arr_id >> (i - j)) & 1;
+        dir = (thread_id >> (i - j)) & 1;
       } else {
-        dir = (arr_id >> (i + 1)) & 1 ^ (arr_id >> (i - j)) & 1;
+        dir = (thread_id >> (i + 1)) & 1 ^ (thread_id >> (i - j)) & 1;
       }
-      // elements to compare and swap are directly next to eachother in warp
-      smem[arr_id] = swap(smem[arr_id], 1, dir);
-      // wait for all warps to finish swap before going to next layer
-      __syncthreads();
+      if (1 << i <= warpSize) {
+        smem[thread_id] = swap(smem[thread_id], offset, dir);
+      } else {
+        __syncthreads();
+        int partner_val = smem[thread_id ^ offset];
+        int val = smem[thread_id];
+        // compare and swap elements
+        smem[thread_id] = val < partner_val == dir ? val : partner_val;
+        smem[thread_id ^ offset] = val < partner_val == dir ? partner_val : val;
+      }
     }
   }
+  __syncthreads();
 
   // update value in array with sorted value
   if (thread_id < size) {
@@ -95,6 +95,6 @@ __global__ void smemBitonicSort(int *arr, int size) {
 
 void launchBitonicSort(int *arr, int size) {
   const int BLOCK_SIZE = 1024;
-  smemBitonicSort<<<(size + (BLOCK_SIZE - 1)) / BLOCK_SIZE, BLOCK_SIZE>>>(arr,
-                                                                          size);
+  smemBitonicSort<<<size / BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE * sizeof(int)>>>(
+      arr, size);
 }

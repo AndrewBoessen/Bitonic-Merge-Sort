@@ -13,8 +13,7 @@ bool isSorted(int *arr, int size) {
 }
 
 int main() {
-  const int SIZE = 4096; // Must be a multiple of 32 for this example
-  const int BLOCK_SIZE = 256;
+  const int SIZE = 1024; // Must be a multiple of 32 for this example
 
   // Allocate and initialize host array
   int *h_arr = new int[SIZE];
