@@ -1,24 +1,24 @@
 /**
-* Warp Bitoic Sort
-*
-* This uses warp shuffle to sort integers in a warp with bitonic sort
-*
-* Author: Andrew Boessen
-*/
+ * Warp Bitoic Sort
+ *
+ * This uses warp shuffle to sort integers in a warp with bitonic sort
+ *
+ * Author: Andrew Boessen
+ */
 
-#include "warp_bitonic_sort.cuh"
+#include "bitonic_sort.cuh"
 
 /**
-* Swap
-* 
-* This is used for swapping elements in bitonic sorting
-*
-* @param x caller line id's value
-* @param mask source lane id = caller line id ^ mask
-* @param dir direction to swap
-*
-* @return min or max of source and caller
-*/
+ * Swap
+ *
+ * This is used for swapping elements in bitonic sorting
+ *
+ * @param x caller line id's value
+ * @param mask source lane id = caller line id ^ mask
+ * @param dir direction to swap
+ *
+ * @return min or max of source and caller
+ */
 __device__ int swap(int x, int mask, int dir) {
   // get correspondin element to x in butterfly diagram
   int y = __shfl_xor_sync(0xffffffff, x, mask);
@@ -29,17 +29,20 @@ __device__ int swap(int x, int mask, int dir) {
 /**
  * Warp Bitonic Sort
  *
- * This function performs a bitonic sort on integers within a warp using warp shuffle operations.
- * It sorts a portion of the input array corresponding to the calling thread's warp.
+ * This function performs a bitonic sort on integers within a warp using warp
+ * shuffle operations. It sorts a portion of the input array corresponding to
+ * the calling thread's warp.
  *
- * The function uses the butterfly network pattern of bitonic sort, leveraging CUDA's warp-level
- * primitives for efficient sorting within a warp (32 threads).
+ * The function uses the butterfly network pattern of bitonic sort, leveraging
+ * CUDA's warp-level primitives for efficient sorting within a warp (32
+ * threads).
  *
  * @param arr Pointer to the array of integers to be sorted
  * @param size Total number of elements in the array
  *
- * @note This function assumes that the number of threads per block is at least equal to the warp size.
- *       Elements beyond the array size are padded with INT_MAX.
+ * @note This function assumes that the number of threads per block is at least
+ * equal to the warp size. Elements beyond the array size are padded with
+ * INT_MAX.
  *
  * @see swap() for the element comparison and swapping logic
  */
@@ -54,7 +57,7 @@ __global__ void warpBitonicSort(int *arr, int size) {
   for (int i = 0; (1 << i) <= warpSize; i++) {
     for (int j = 0; j <= i; j++) {
       // distance between caller and source lanes
-      int mask = 1 << (i-j);
+      int mask = 1 << (i - j);
       // direction to swap caller and source lanes
       int dir;
       // only alternate direction when forming bitonic sequence
@@ -73,7 +76,7 @@ __global__ void warpBitonicSort(int *arr, int size) {
   }
 }
 
-void launchWarpBitonicSort(int *arr, int size) {
-    const int BLOCK_SIZE = 256;
-    warpBitonicSort<<<size/BLOCK_SIZE, BLOCK_SIZE>>>(arr, size);
+void launchBitonicSort(int *arr, int size) {
+  const int BLOCK_SIZE = 256;
+  warpBitonicSort<<<size / BLOCK_SIZE, BLOCK_SIZE>>>(arr, size);
 }
