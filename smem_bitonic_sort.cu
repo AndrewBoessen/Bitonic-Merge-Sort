@@ -99,7 +99,7 @@ __global__ void smemBitonicSort(int *arr, int size) {
 }
 
 void launchBitonicSort(int *arr, int size) {
-  const int BLOCK_SIZE = 1024;
+  const int BLOCK_SIZE = 512;
   smemBitonicSort<<<(size + BLOCK_SIZE - 1) / BLOCK_SIZE, BLOCK_SIZE,
                     BLOCK_SIZE * sizeof(int)>>>(arr, size);
 }

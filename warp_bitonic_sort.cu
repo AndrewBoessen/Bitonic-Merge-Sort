@@ -77,6 +77,6 @@ __global__ void warpBitonicSort(int *arr, int size) {
 }
 
 void launchBitonicSort(int *arr, int size) {
-  const int BLOCK_SIZE = 256;
+  const int BLOCK_SIZE = 512;
   warpBitonicSort<<<size / BLOCK_SIZE, BLOCK_SIZE>>>(arr, size);
 }
