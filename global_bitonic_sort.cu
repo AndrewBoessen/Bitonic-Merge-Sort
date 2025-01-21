@@ -9,17 +9,25 @@
 #include "bitonic_sort.cuh"
 
 /**
- * Swap
+ * Global Memory Bitonic Sort Swap
  *
  * This is used for swapping elements in bitonic sorting
  *
  * @param x caller line id's value
- * @param mask source lane id = caller line id ^ mask
- * @param dir direction to swap
+ * @param i current large step in bitonic sort sequence
+ * @param j current small step in sequence
  * @param arr global memory array
  *
  */
-__device__ void swap(int x, int mask, int dir, int *arr) {
+__global__ void globalSwap(int i, int j, int *arr) {
+  // thread id within grid
+  int x = threadIdx.x * blockIdx.x * blockDim.x;
+  // distance between caller and source lanes
+  int mask = 1 << (i - j);
+
+  // perform compare and swap
+  int dir = x & (1 << i);
+
   // get correspondin element to x in butterfly diagram
   int y = x ^ mask;
   // lower ids thread perform swap
@@ -45,40 +53,27 @@ __device__ void swap(int x, int mask, int dir, int *arr) {
 /**
  * Global Memory Bitonic Sort
  *
- * The function uses the butterfly network pattern of bitonic sort, leveraging
- * CUDA's warp-level primitives for efficient sorting within a warp (32
- * threads). The swaps are tiled into warps of 32 threads. This is able to do
- * swaps without allocating extra memory for temporary variable.
- *
  * @param arr Pointer to the array of integers to be sorted
  * @param size Total number of elements in the array
+ * @param block_size Number of threads in one block
+ * @param num_blocks Number of total block in grid
  *
- * @note This function assumes that the number of threads per block is at least
- * equal to the warp size. Elements beyond the array size are padded with
- * INT_MAX.
+ * @note This function assumes that the number elements in the arrays is a power
+ * of two
  *
- * @see swap() for the element comparison and swapping logic
+ * @see globalSwap() for the element comparison and swapping logic kernel
  */
-__global__ void globalBitonicSort(int *arr, int size) {
-  // local thread id in block
-  int thread_id = threadIdx.x + blockIdx.x * blockDim.x;
-
-  // make bitonic sequence and sort
-  for (int i = 0; (1 << i) <= blockDim.x; i++) {
+void globalBitonicSort(int *arr, int size, int block_size,
+                       int num_blocks) { // make bitonic sequence and sort
+  for (int i = 0; (1 << i) <= size; i++) {
     for (int j = 1; j <= i; j++) {
-      // distance between caller and source lanes
-      int mask = 1 << (i - j);
-
-      // perform compare and swap
-      int dir = thread_id & (1 << i);
-      swap(thread_id, mask, dir, arr);
-      __syncthreads();
+      globalSwap<<<block_size, num_blocks>>>(i, j, arr);
     }
   }
 }
-
 void launchBitonicSort(int *arr, int size) {
   const int BLOCK_SIZE = 512;
   const int NUM_BLOCKS = (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
-  globalBitonicSort<<<NUM_BLOCKS, BLOCK_SIZE>>>(arr, size);
+  // call sort function
+  globalBitonicSort(arr, size, BLOCK_SIZE, NUM_BLOCKS);
 }
