@@ -21,7 +21,8 @@
  */
 __global__ void globalSwap(int i, int j, int *arr) {
   // thread id within grid
-  int x = threadIdx.x * blockIdx.x * blockDim.x;
+  int x = threadIdx.x + blockIdx.x * blockDim.x;
+
   // distance between caller and source lanes
   int mask = 1 << (i - j);
 
@@ -67,7 +68,7 @@ void globalBitonicSort(int *arr, int size, int block_size,
                        int num_blocks) { // make bitonic sequence and sort
   for (int i = 0; (1 << i) <= size; i++) {
     for (int j = 1; j <= i; j++) {
-      globalSwap<<<block_size, num_blocks>>>(i, j, arr);
+      globalSwap<<<num_blocks, block_size>>>(i, j, arr);
     }
   }
 }

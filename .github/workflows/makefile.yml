@@ -35,7 +35,7 @@ jobs:
     - name: Build with Makefile
       run: |
         # Make sure the Makefile exists and then build the project
-        if [ -f makefile ]; then
+        if [ -f Makefile ]; then
           make
         else
           echo "Makefile not found!"
